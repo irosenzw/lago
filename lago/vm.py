@@ -122,7 +122,7 @@ class LocalLibvirtVMProvider(vm.VMProviderPlugin):
                     ] + [
                         sysprep.config_net_interface_dhcp(
                             'eth%d' % index,
-                            utils.ip_to_mac(nic['ip']),
+                            utils.ipv4_to_mac(nic['ip']),
                         )
                         for index, nic in enumerate(self.vm._spec['nics'])
                         if 'ip' in nic
@@ -265,6 +265,10 @@ class LocalLibvirtVMProvider(vm.VMProviderPlugin):
                 bus = 'ide'
             # names converted
 
+            # support virtio-scsi - sdX devices
+            if dev_spec['dev'].startswith('sd'):
+                bus = 'scsi'
+
             disk = lxml.etree.Element(
                 'disk',
                 type='file',
@@ -276,8 +280,13 @@ class LocalLibvirtVMProvider(vm.VMProviderPlugin):
                     'driver',
                     name='qemu',
                     type=dev_spec['format'],
+                    discard='unmap',
                 ),
             )
+
+            serial = lxml.etree.SubElement(disk, 'serial')
+            serial.text = "{}".format(disk_order + 1)
+            disk.append(serial)
 
             disk.append(
                 lxml.etree.Element(
@@ -314,7 +323,7 @@ class LocalLibvirtVMProvider(vm.VMProviderPlugin):
             if 'ip' in dev_spec:
                 interface.append(
                     lxml.etree.Element(
-                        'mac', address=utils.ip_to_mac(dev_spec['ip'])
+                        'mac', address=utils.ipv4_to_mac(dev_spec['ip'])
                     ),
                 )
             devices.append(interface)

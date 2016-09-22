@@ -33,6 +33,7 @@ class OvirtVirtEnv(lago.virt.VirtEnv):
     def __init__(self, prefix, vm_specs, net_spec):
         self._engine_vm = None
         self._host_vms = []
+        self._ovirt_cpu_family = None
         super(OvirtVirtEnv, self).__init__(prefix, vm_specs, net_spec)
 
     def _create_vm(self, vm_spec):
@@ -76,6 +77,31 @@ class OvirtVirtEnv(lago.virt.VirtEnv):
     def host_vms(self):
         return self._host_vms[:]
 
+    def get_ovirt_cpu_family(self):
+        ovirt_cpu_families = {
+            'Broadwell': 'Intel Broadwell Family',
+            'Broadwell-noTSX': 'Intel Broadwell-noTSX Family',
+            'Haswell': 'Intel Haswell Family',
+            'Haswell-noTSX': 'Intel Haswell-noTSX Family',
+            'SandyBridge': 'Intel SandyBridge Family',
+            'Westmere': 'Intel Westmere Family',
+            'Nehalem': 'Intel Nehalem Family',
+            'Penryn': 'Intel Penryn Family',
+            'Conroe': 'Intel Conroe Family',
+            'Opteron_G5': 'AMD Opteron G5',
+            'Opteron_G4': 'AMD Opteron G4',
+            'Opteron_G3': 'AMD Opteron G3',
+            'Opteron_G2': 'AMD Opteron G2',
+            'Opteron_G1': 'AMD Opteron G1',
+        }
+
+        if self._ovirt_cpu_family is None:
+            cpu_model = super(OvirtVirtEnv, self).get_cpu_model()
+            self._ovirt_cpu_family = ovirt_cpu_families.get(
+                cpu_model, ovirt_cpu_families['Conroe']
+            )
+        return self._ovirt_cpu_family
+
 
 # TODO : solve the problem of ssh to the Node
 class NodeVM(lago.vm.DefaultVM):
@@ -112,26 +138,29 @@ class EngineVM(lago.vm.DefaultVM):
             insecure=True,
         )
 
-    def _get_api(self, wait):
-        if wait:
-            self.wait_for_ssh()
-            try:
-                testlib.assert_true_within_long(
-                    lambda: self.service('ovirt-engine').alive()
-                )
+    def _get_api(self):
+        try:
+            api = []
 
-                api = []
-                testlib.assert_true_within_short(
-                    lambda: api.append(self._create_api()) or True,
-                    allowed_exceptions=[RequestError, ConnectionError],
-                )
-            except AssertionError:
-                raise RuntimeError('Failed to connect to the engine')
+            def get():
+                instance = self._create_api()
+                if instance:
+                    api.append(instance)
+                    return True
+                return False
+
+            testlib.assert_true_within_short(
+                get,
+                allowed_exceptions=[RequestError, ConnectionError],
+            )
+        except AssertionError:
+            raise RuntimeError('Failed to connect to the engine')
+
         return api.pop()
 
-    def get_api(self, wait=True):
+    def get_api(self):
         if self._api is None or not self._api.test():
-            self._api = self._get_api(wait)
+            self._api = self._get_api()
         return self._api
 
     def add_iso(self, path):
