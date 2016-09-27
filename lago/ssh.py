@@ -99,7 +99,7 @@ def ssh(
 def wait_for_ssh(
     ip_addr,
     host_name=None,
-    connect_timeout=600, # 10 minutes
+    connect_timeout=600,    # 10 minutes
     ssh_key=None,
     username='root',
     password='123456',

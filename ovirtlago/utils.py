@@ -29,10 +29,8 @@ from . import constants
 def generate_request_handler(root_dir):
     """
     Factory for _BetterHTTPRequestHandler classes
-
     Args:
         root_dir (path): Path to the dir to serve
-
     Returns:
         _BetterHTTPRequestHandler: A ready to be used improved http request
             handler
@@ -57,12 +55,10 @@ def generate_request_handler(root_dir):
 def _create_http_server(listen_ip, listen_port, root_dir):
     """
     Starts an http server with an improved request handler
-
     Args:
         listen_ip (str): Ip to listen on
         port (int): Port to register on
         root_dir (str): path to the directory to serve
-
     Returns:
         BaseHTTPServer: instance of the http server, already running on a
             thread
@@ -81,21 +77,17 @@ def repo_server_context(prefix):
     Context manager that starts an http server that serves the given prefix's
     yum repository. Will listen on :class:`constants.REPO_SERVER_PORT` and on
     the first network defined in the previx virt config
-
     Args:
         prefix(ovirtlago.OvirtPrefix): prefix to start the server for
-
     Returns:
         None
     """
-    _root_dir = prefix._get_internal_repo() or prefix.paths.internal_repo()
-
     gw_ip = prefix.virt_env.get_net().gw()
     port = constants.REPO_SERVER_PORT
     server = _create_http_server(
         listen_ip=gw_ip,
         listen_port=port,
-        root_dir=_root_dir,
+        root_dir=prefix.paths.internal_repo(),
     )
     try:
         yield

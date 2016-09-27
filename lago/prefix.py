@@ -48,13 +48,11 @@ def _create_ip(subnet, index):
     """
     Given a subnet or an ip and an index returns the ip with that lower index
     from the subnet (255.255.255.0 mask only subnets)
-
     Args:
         subnet (str): Strign containing the three first elements of the decimal
             representation of a subnet (X.Y.Z) or a full ip (X.Y.Z.A)
         index (int or str): Last element of a decimal ip representation, for
             example, 123 for the ip 1.2.3.123
-
     Returns:
         str: The dotted decimal representation of the ip
     """
@@ -64,15 +62,12 @@ def _create_ip(subnet, index):
 def _ip_in_subnet(subnet, ip):
     """
     Checks if an ip is included in a subnet.
-
     Note:
         only 255.255.255.0 masks allowed
-
     Args:
         subnet (str): Strign containing the three first elements of the decimal
             representation of a subnet (X.Y.Z) or a full ip (X.Y.Z.A)
         ip (str or int): Decimal ip representation
-
     Returns:
         bool: ``True`` if ip is in subnet, ``False`` otherwise
     """
@@ -86,7 +81,6 @@ class Prefix(object):
     """
     A prefix is a directory that will contain all the data needed to setup the
     environment.
-
     Attributes:
         _prefix (str): Path to the directory of this prefix
         _paths (lago.path.Paths): Path handler class
@@ -104,19 +98,10 @@ class Prefix(object):
         self.paths = paths.Paths(self._prefix)
         self._virt_env = None
         self._metadata = None
-        self._internal_repo = None
-
-    def _get_internal_repo (self):
-        return self._internal_repo
-
-    def _set_internal_repo (self, path):
-        self._internal_repo = path
-
 
     def _get_metadata(self):
         """
         Retrieve the metadata info for this prefix
-
         Returns:
             dict: metadata info
         """
@@ -135,7 +120,6 @@ class Prefix(object):
     def _save_metadata(self):
         """
         Write this prefix metadata to disk
-
         Returns:
             None
         """
@@ -145,7 +129,6 @@ class Prefix(object):
     def save(self):
         """
         Save this prefix to persistent storage
-
         Returns:
             None
         """
@@ -158,10 +141,8 @@ class Prefix(object):
     def _create_ssh_keys(self):
         """
         Generate a pair of ssh keys for this prefix
-
         Returns:
             None
-
         Raises:
             RuntimeError: if it fails to create the keys
         """
@@ -188,12 +169,9 @@ class Prefix(object):
         Initialize this prefix, this includes creating the destination path,
         and creating the uuid for the prefix, for any other actions see
         :func:`Prefix.virt_conf`
-
         Will safely roll back if any of those steps fail
-
         Returns:
             None
-
         Raises:
             RuntimeError: If it fails to create the prefix dir
         """
@@ -229,7 +207,6 @@ class Prefix(object):
         """
         Stops any running entities in the prefix and uninitializes it, usually
         you want to do this if you are going to remove the prefix afterwards
-
         Returns:
             None
         """
@@ -243,10 +220,8 @@ class Prefix(object):
         """
         Given a configuration specification, initializes all the net
         definitions in it so they can be used comfortably
-
         Args:
             conf (dict): Configuration specification
-
         Returns:
             dict: the adapted new conf
         """
@@ -262,14 +237,11 @@ class Prefix(object):
         """
         Checks if all of the nets defined in the config are inside the allowed
         range, throws exception if not
-
         Args:
             conf (dict): Configuration spec where to get the nets definitions
                 from
-
         Returns:
             None
-
         Raises:
             RuntimeError: If there are any subnets out of the allowed range
         """
@@ -286,11 +258,9 @@ class Prefix(object):
     def _allocate_subnets(self, conf):
         """
         Allocate all the subnets needed by the given configuration spec
-
         Args:
             conf (dict): Configuration spec where to get the nets definitions
                 from
-
         Returns:
             tuple(list, dict): allocated subnets and modified conf
         """
@@ -312,13 +282,11 @@ class Prefix(object):
         """
         Populates the given net spec mapping entry with the nicks of the given
         domain
-
         Args:
             net (dict): Network spec to populate
             dom (dict): libvirt domain specification
             nic (str): Name of the interface to add to the net mapping from the
                 domain
-
         Returns:
             None
         """
@@ -332,16 +300,12 @@ class Prefix(object):
         Parse all the domains in the given conf and preallocate all their ips
         into the networks mappings, raising exception on duplicated ips or ips
         out of the allowed ranges
-
         See Also:
             :mod:`lago.subnet_lease`
-
         Args:
             conf (dict): Configuration spec to parse
-
         Returns:
             None
-
         Raises:
             RuntimeError: if there are any duplicated ips or any ip out of the
                 allowed range
@@ -388,10 +352,8 @@ class Prefix(object):
         """
         For all the nics of all the domains in the conf that have dynamic ip,
         allocate one and addit to the network mapping
-
         Args:
             conf (dict): Configuration spec to extract the domains from
-
         Returns:
             None
         """
@@ -422,10 +384,8 @@ class Prefix(object):
         Initialize and populate all the network related elements, like
         reserving ips and populating network specs of the given confiiguration
         spec
-
         Args:
             conf (dict): Configuration spec to initalize
-
         Returns:
             None
         """
@@ -451,7 +411,6 @@ class Prefix(object):
     ):
         """
         Creates a disc with the given name from the given repo or store
-
         Args:
             name (str): Name of the domain to create the disk for
             spec (dict): Specification of the disk to create
@@ -459,10 +418,8 @@ class Prefix(object):
                 to use
             template_store (TemplateStore or None): template store instance to
                 use
-
         Returns:
             Tuple(str, dict): Path to the disk and disk metadata
-
         Raises:
             RuntimeError: If the type of the disk is not supported or failed to
                 create the disk
@@ -665,10 +622,8 @@ class Prefix(object):
         Creates a disk from network provided ova.
         Calculates the needed memory from the ovf.
         The disk will be cached in the template repo
-
         Args:
             filename(str): the url to retrive the data from
-
         TODO:
             * Add hash checking against the server
               for faster download and latest version
@@ -676,12 +631,10 @@ class Prefix(object):
             * Add cloud init support - by using cdroms in other place
             * Handle cpu in some way - some other place need to pick it up
             * Handle the memory units properly - we just assume MegaBytes
-
         Returns:
             list of dict: list with the disk specification
             int: VM memory, None if none defined
             int: Number of virtual cpus, None if none defined
-
         Raises:
             RuntimeError: If the ova format is not supported
             TypeError: If the memory units in the ova are noot supported
@@ -761,11 +714,9 @@ class Prefix(object):
     def _use_prototype(self, spec, prototypes):
         """
         Populates the given spec with the values of it's declared prototype
-
         Args:
             spec (dict): spec to update
             prototypes (dict): Configuration spec containing the prototypes
-
         Returns:
             dict: updated spec
         """
@@ -780,10 +731,8 @@ class Prefix(object):
     def fetch_url(self, url):
         """
         Retrieves the given url to the prefix
-
         Args:
             url(str): Url to retrieve
-
         Returns:
             str: path to the downloaded file
         """
@@ -806,12 +755,10 @@ class Prefix(object):
         Initializes all the virt infrastructure of the prefix, creating the
         domains disks, doing any network leases and creating all the virt
         related files and dirs inside this prefix.
-
         Args:
             conf_fd (File): File like object to read the config from
             template_repo (TemplateRepository): template repository intance
             template_store (TemplateStore): template store instance
-
         Returns:
             None
         """
@@ -916,12 +863,10 @@ class Prefix(object):
         Initializes all the virt infrastructure of the prefix, creating the
         domains disks, doing any network leases and creating all the virt
         related files and dirs inside this prefix.
-
         Args:
             conf (dict): Configuration spec
             template_repo (TemplateRepository): template repository intance
             template_store (TemplateStore): template store instance
-
         Returns:
             None
         """
@@ -956,10 +901,8 @@ class Prefix(object):
     def start(self, vm_names=None):
         """
         Start this prefix
-
         Args:
             vm_names(list of str): List of the vms to start
-
         Returns:
             None
         """
@@ -968,10 +911,8 @@ class Prefix(object):
     def stop(self, vm_names=None):
         """
         Stop this prefix
-
         Args:
             vm_names(list of str): List of the vms to stop
-
         Returns:
             None
         """
@@ -980,10 +921,8 @@ class Prefix(object):
     def create_snapshots(self, name):
         """
         Creates one snapshot on all the domains with the given name
-
         Args:
             name (str): Name of the snapshots to create
-
         Returns:
             None
         """
@@ -992,10 +931,8 @@ class Prefix(object):
     def revert_snapshots(self, name):
         """
         Revert all the snapshots with the given name from all the domains
-
         Args:
             name (str): Name of the snapshots to revert
-
         Returns:
             None
         """
@@ -1004,7 +941,6 @@ class Prefix(object):
     def get_snapshots(self):
         """
         Retrieve info on all the snapshots from all the domains
-
         Returns:
             dict of str: list(str): dictionary with vm_name -> snapshot list
         """
@@ -1013,7 +949,6 @@ class Prefix(object):
     def _create_virt_env(self):
         """
         Create a new virt env from this prefix
-
         Returns:
             lago.virt.VirtEnv: virt env created from this prefix
         """
@@ -1023,7 +958,6 @@ class Prefix(object):
     def virt_env(self):
         """
         Getter for this instance's virt env, creates it if needed
-
         Returns:
             lago.virt.VirtEnv: virt env instance used by this prefix
         """
@@ -1042,7 +976,6 @@ class Prefix(object):
     def get_vms(self):
         """
         Retrieve info on all the vms
-
         Returns:
             dict of str->list(str): dictionary with vm_name -> vm list
         """
@@ -1051,7 +984,6 @@ class Prefix(object):
     def get_nets(self):
         """
         Retrieve info on all the nets from all the domains
-
         Returns:
             dict of str->list(str): dictionary with net_name -> net list
         """
@@ -1062,14 +994,11 @@ class Prefix(object):
         """
         Look for an existing prefix in the given path, in a path/.lago dir, or
         in a .lago dir under any of it's parent directories
-
         Args:
             start_path (str): path to start the search from, if None passed, it
                 will use the current dir
-
         Returns:
             str: path to the found prefix
-
         Raises:
             RuntimeError: if no prefix was found
         """
@@ -1101,10 +1030,8 @@ class Prefix(object):
     def is_prefix(cls, path):
         """
         Check if a path is a valid prefix
-
         Args:
             path(str): path to be checked
-
         Returns:
             bool: True if the given path is a prefix
         """
@@ -1132,13 +1059,10 @@ class Prefix(object):
     def _get_scripts(self, host_metadata):
         """
         Temporary method to retrieve the host scripts
-
         TODO:
             remove once the "ovirt-scripts" option gets deprecated
-
         Args:
             host_metadata(dict): host metadata to retrieve the scripts for
-
         Returns:
             list: deploy scripts for the host, empty if none found
         """
@@ -1158,13 +1082,10 @@ class Prefix(object):
     def _set_scripts(self, host_metadata, scripts):
         """
         Temporary method to set the host scripts
-
         TODO:
             remove once the "ovirt-scripts" option gets deprecated
-
         Args:
             host_metadata(dict): host metadata to set scripts in
-
         Returns:
             dict: the updated metadata
         """
@@ -1178,11 +1099,9 @@ class Prefix(object):
     def _copy_deploy_scripts_for_hosts(self, domains):
         """
         Copy the deploy scripts for all the domains into the prefix scripts dir
-
         Args:
             domains(dict): spec with the domains info as when loaded from the
                 initfile
-
         Returns:
             None
         """
@@ -1201,11 +1120,9 @@ class Prefix(object):
     def _copy_delpoy_scripts(self, scripts):
         """
         Copy the given deploy scripts to the scripts dir in the prefix
-
         Args:
             scripts(list of str): list of paths of the scripts to copy to the
                 prefix
-
         Returns:
             list of str: list with the paths to the copied scripts, with a
                 prefixed with $LAGO_PREFIX_PATH so the full path is not
